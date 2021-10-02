@@ -7,8 +7,8 @@
   Johan Nordberg (JS version - code@johan-nordberg.com)
 */
 
-var NeuQuant = require('./TypedNeuQuant.js');
-var LZWEncoder = require('./LZWEncoder.js');
+var NeuQuant = require("./TypedNeuQuant.js");
+var LZWEncoder = require("./LZWEncoder.js");
 
 function ByteArray() {
   this.page = -1;
@@ -19,16 +19,15 @@ function ByteArray() {
 ByteArray.pageSize = 4096;
 ByteArray.charMap = {};
 
-for (var i = 0; i < 256; i++)
-  ByteArray.charMap[i] = String.fromCharCode(i);
+for (var i = 0; i < 256; i++) ByteArray.charMap[i] = String.fromCharCode(i);
 
-ByteArray.prototype.newPage = function() {
+ByteArray.prototype.newPage = function () {
   this.pages[++this.page] = new Uint8Array(ByteArray.pageSize);
   this.cursor = 0;
 };
 
-ByteArray.prototype.getData = function() {
-  var rv = '';
+ByteArray.prototype.getData = function () {
+  var rv = "";
   for (var p = 0; p < this.pages.length; p++) {
     for (var i = 0; i < ByteArray.pageSize; i++) {
       rv += ByteArray.charMap[this.pages[p][i]];
@@ -37,17 +36,17 @@ ByteArray.prototype.getData = function() {
   return rv;
 };
 
-ByteArray.prototype.writeByte = function(val) {
+ByteArray.prototype.writeByte = function (val) {
   if (this.cursor >= ByteArray.pageSize) this.newPage();
   this.pages[this.page][this.cursor++] = val;
 };
 
-ByteArray.prototype.writeUTFBytes = function(string) {
+ByteArray.prototype.writeUTFBytes = function (string) {
   for (var l = string.length, i = 0; i < l; i++)
     this.writeByte(string.charCodeAt(i));
 };
 
-ByteArray.prototype.writeBytes = function(array, offset, length) {
+ByteArray.prototype.writeBytes = function (array, offset, length) {
   for (var l = length || array.length, i = offset || 0; i < l; i++)
     this.writeByte(array[i]);
 };
@@ -87,14 +86,14 @@ function GIFEncoder(width, height) {
   Sets the delay time between each frame, or changes it for subsequent frames
   (applies to last frame added)
 */
-GIFEncoder.prototype.setDelay = function(milliseconds) {
+GIFEncoder.prototype.setDelay = function (milliseconds) {
   this.delay = Math.round(milliseconds / 10);
 };
 
 /*
   Sets frame rate in frames per second.
 */
-GIFEncoder.prototype.setFrameRate = function(fps) {
+GIFEncoder.prototype.setFrameRate = function (fps) {
   this.delay = Math.round(100 / fps);
 };
 
@@ -104,7 +103,7 @@ GIFEncoder.prototype.setFrameRate = function(fps) {
 
   Default is 0 if no transparent color has been set, otherwise 2.
 */
-GIFEncoder.prototype.setDispose = function(disposalCode) {
+GIFEncoder.prototype.setDispose = function (disposalCode) {
   if (disposalCode >= 0) this.dispose = disposalCode;
 };
 
@@ -119,7 +118,7 @@ GIFEncoder.prototype.setDispose = function(disposalCode) {
   Must be invoked before the first image is added
 */
 
-GIFEncoder.prototype.setRepeat = function(repeat) {
+GIFEncoder.prototype.setRepeat = function (repeat) {
   this.repeat = repeat;
 };
 
@@ -130,7 +129,7 @@ GIFEncoder.prototype.setRepeat = function(repeat) {
   color becomes the transparent color for that frame. May be set to null to
   indicate no transparent color.
 */
-GIFEncoder.prototype.setTransparent = function(color) {
+GIFEncoder.prototype.setTransparent = function (color) {
   this.transparent = color;
 };
 
@@ -139,7 +138,7 @@ GIFEncoder.prototype.setTransparent = function(color) {
   actually deferred until the next frame is received so that timing
   data can be inserted.  Invoking finish() flushes all frames.
 */
-GIFEncoder.prototype.addFrame = function(imageData) {
+GIFEncoder.prototype.addFrame = function (imageData) {
   this.image = imageData;
 
   this.getImagePixels(); // convert to correct format if necessary
@@ -166,7 +165,7 @@ GIFEncoder.prototype.addFrame = function(imageData) {
   Adds final trailer to the GIF stream, if you don't call the finish method
   the GIF stream will not be valid.
 */
-GIFEncoder.prototype.finish = function() {
+GIFEncoder.prototype.finish = function () {
   this.out.writeByte(0x3b); // gif trailer
 };
 
@@ -177,7 +176,7 @@ GIFEncoder.prototype.finish = function() {
   default, and produces good color mapping at reasonable speeds. Values
   greater than 20 do not yield significant improvements in speed.
 */
-GIFEncoder.prototype.setQuality = function(quality) {
+GIFEncoder.prototype.setQuality = function (quality) {
   if (quality < 1) quality = 1;
   this.sample = quality;
 };
@@ -185,14 +184,14 @@ GIFEncoder.prototype.setQuality = function(quality) {
 /*
   Writes GIF file header
 */
-GIFEncoder.prototype.writeHeader = function() {
+GIFEncoder.prototype.writeHeader = function () {
   this.out.writeUTFBytes("GIF89a");
 };
 
 /*
   Analyzes current frame colors and creates color map.
 */
-GIFEncoder.prototype.analyzePixels = function() {
+GIFEncoder.prototype.analyzePixels = function () {
   var len = this.pixels.length;
   var nPix = len / 3;
 
@@ -227,23 +226,23 @@ GIFEncoder.prototype.analyzePixels = function() {
 /*
   Returns index of palette color closest to c
 */
-GIFEncoder.prototype.findClosest = function(c) {
+GIFEncoder.prototype.findClosest = function (c) {
   if (this.colorTab === null) return -1;
 
-  var r = (c & 0xFF0000) >> 16;
-  var g = (c & 0x00FF00) >> 8;
-  var b = (c & 0x0000FF);
+  var r = (c & 0xff0000) >> 16;
+  var g = (c & 0x00ff00) >> 8;
+  var b = c & 0x0000ff;
   var minpos = 0;
   var dmin = 256 * 256 * 256;
   var len = this.colorTab.length;
 
-  for (var i = 0; i < len;) {
+  for (var i = 0; i < len; ) {
     var dr = r - (this.colorTab[i++] & 0xff);
     var dg = g - (this.colorTab[i++] & 0xff);
     var db = b - (this.colorTab[i] & 0xff);
     var d = dr * dr + dg * dg + db * db;
     var index = i / 3;
-    if (this.usedEntry[index] && (d < dmin)) {
+    if (this.usedEntry[index] && d < dmin) {
       dmin = d;
       minpos = index;
     }
@@ -257,7 +256,7 @@ GIFEncoder.prototype.findClosest = function(c) {
   Extracts image pixels into byte array pixels
   (removes alphachannel from canvas imagedata)
 */
-GIFEncoder.prototype.getImagePixels = function() {
+GIFEncoder.prototype.getImagePixels = function () {
   var w = this.width;
   var h = this.height;
   this.pixels = new Uint8Array(w * h * 3);
@@ -267,10 +266,10 @@ GIFEncoder.prototype.getImagePixels = function() {
 
   for (var i = 0; i < h; i++) {
     for (var j = 0; j < w; j++) {
-      var b = (i * w * 4) + j * 4;
+      var b = i * w * 4 + j * 4;
       this.pixels[count++] = data[b];
-      this.pixels[count++] = data[b+1];
-      this.pixels[count++] = data[b+2];
+      this.pixels[count++] = data[b + 1];
+      this.pixels[count++] = data[b + 2];
     }
   }
 };
@@ -278,7 +277,7 @@ GIFEncoder.prototype.getImagePixels = function() {
 /*
   Writes Graphic Control Extension
 */
-GIFEncoder.prototype.writeGraphicCtrlExt = function() {
+GIFEncoder.prototype.writeGraphicCtrlExt = function () {
   this.out.writeByte(0x21); // extension introducer
   this.out.writeByte(0xf9); // GCE label
   this.out.writeByte(4); // data block size
@@ -300,9 +299,9 @@ GIFEncoder.prototype.writeGraphicCtrlExt = function() {
   // packed fields
   this.out.writeByte(
     0 | // 1:3 reserved
-    disp | // 4:6 disposal
-    0 | // 7 user input - 0 = none
-    transp // 8 transparency flag
+      disp | // 4:6 disposal
+      0 | // 7 user input - 0 = none
+      transp // 8 transparency flag
   );
 
   this.writeShort(this.delay); // delay x 1/100 sec
@@ -313,7 +312,7 @@ GIFEncoder.prototype.writeGraphicCtrlExt = function() {
 /*
   Writes Image Descriptor
 */
-GIFEncoder.prototype.writeImageDesc = function() {
+GIFEncoder.prototype.writeImageDesc = function () {
   this.out.writeByte(0x2c); // image separator
   this.writeShort(0); // image position x,y = 0,0
   this.writeShort(0);
@@ -328,10 +327,10 @@ GIFEncoder.prototype.writeImageDesc = function() {
     // specify normal LCT
     this.out.writeByte(
       0x80 | // 1 local color table 1=yes
-      0 | // 2 interlace - 0=no
-      0 | // 3 sorted - 0=no
-      0 | // 4-5 reserved
-      this.palSize // 6-8 size of color table
+        0 | // 2 interlace - 0=no
+        0 | // 3 sorted - 0=no
+        0 | // 4-5 reserved
+        this.palSize // 6-8 size of color table
     );
   }
 };
@@ -339,7 +338,7 @@ GIFEncoder.prototype.writeImageDesc = function() {
 /*
   Writes Logical Screen Descriptor
 */
-GIFEncoder.prototype.writeLSD = function() {
+GIFEncoder.prototype.writeLSD = function () {
   // logical screen size
   this.writeShort(this.width);
   this.writeShort(this.height);
@@ -347,9 +346,9 @@ GIFEncoder.prototype.writeLSD = function() {
   // packed fields
   this.out.writeByte(
     0x80 | // 1 : global color table flag = 1 (gct used)
-    0x70 | // 2-4 : color resolution = 7
-    0x00 | // 5 : gct sort flag = 0
-    this.palSize // 6-8 : gct size
+      0x70 | // 2-4 : color resolution = 7
+      0x00 | // 5 : gct sort flag = 0
+      this.palSize // 6-8 : gct size
   );
 
   this.out.writeByte(0); // background color index
@@ -359,11 +358,11 @@ GIFEncoder.prototype.writeLSD = function() {
 /*
   Writes Netscape application extension to define repeat count.
 */
-GIFEncoder.prototype.writeNetscapeExt = function() {
+GIFEncoder.prototype.writeNetscapeExt = function () {
   this.out.writeByte(0x21); // extension introducer
   this.out.writeByte(0xff); // app extension label
   this.out.writeByte(11); // block size
-  this.out.writeUTFBytes('NETSCAPE2.0'); // app id + auth code
+  this.out.writeUTFBytes("NETSCAPE2.0"); // app id + auth code
   this.out.writeByte(3); // sub-block size
   this.out.writeByte(1); // loop sub-block id
   this.writeShort(this.repeat); // loop count (extra iterations, 0=repeat forever)
@@ -373,30 +372,34 @@ GIFEncoder.prototype.writeNetscapeExt = function() {
 /*
   Writes color table
 */
-GIFEncoder.prototype.writePalette = function() {
+GIFEncoder.prototype.writePalette = function () {
   this.out.writeBytes(this.colorTab);
-  var n = (3 * 256) - this.colorTab.length;
-  for (var i = 0; i < n; i++)
-    this.out.writeByte(0);
+  var n = 3 * 256 - this.colorTab.length;
+  for (var i = 0; i < n; i++) this.out.writeByte(0);
 };
 
-GIFEncoder.prototype.writeShort = function(pValue) {
-  this.out.writeByte(pValue & 0xFF);
-  this.out.writeByte((pValue >> 8) & 0xFF);
+GIFEncoder.prototype.writeShort = function (pValue) {
+  this.out.writeByte(pValue & 0xff);
+  this.out.writeByte((pValue >> 8) & 0xff);
 };
 
 /*
   Encodes and writes pixel data
 */
-GIFEncoder.prototype.writePixels = function() {
-  var enc = new LZWEncoder(this.width, this.height, this.indexedPixels, this.colorDepth);
+GIFEncoder.prototype.writePixels = function () {
+  var enc = new LZWEncoder(
+    this.width,
+    this.height,
+    this.indexedPixels,
+    this.colorDepth
+  );
   enc.encode(this.out);
 };
 
 /*
   Retrieves the GIF stream
 */
-GIFEncoder.prototype.stream = function() {
+GIFEncoder.prototype.stream = function () {
   return this.out;
 };
 

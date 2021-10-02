@@ -1,20 +1,20 @@
-$(function() {
-  var $gif = $('#gif');
-  var $gifLink = $('#gifLink');
-  var $error = $('#error');
-  var $record = $('#record');
-  var $info = $record.find('.info');
-  var $qualityBad = $('#quality-bad');
-  var $lengthShort = $('#length-short');
-  var $group = $('.group');
-  var $countdown = $('#countdown');
-  var $loader = $('#loader');
+$(function () {
+  var $gif = $("#gif");
+  var $gifLink = $("#gifLink");
+  var $error = $("#error");
+  var $record = $("#record");
+  var $info = $record.find(".info");
+  var $qualityBad = $("#quality-bad");
+  var $lengthShort = $("#length-short");
+  var $group = $(".group");
+  var $countdown = $("#countdown");
+  var $loader = $("#loader");
   var token = extractToken(document.location.hash);
-  var $imgur = $('#imgur');
-  var $imgurOauth = $('#imgur a:first');
-  var $imgurAnon = $('#imgur a:last');
-  var $imgurUpload = $('#imgur-upload');
-  var clientId = '6a5400948b3b376';
+  var $imgur = $("#imgur");
+  var $imgurOauth = $("#imgur a:first");
+  var $imgurAnon = $("#imgur a:last");
+  var $imgurUpload = $("#imgur-upload");
+  var clientId = "6a5400948b3b376";
   var loader;
 
   $imgurUpload.hide();
@@ -26,13 +26,13 @@ $(function() {
   $loader.knob().hide();
   $countdown.knob().hide();
 
-  $imgur.find('a').click(function() {
+  $imgur.find("a").click(function () {
     localStorage.doUpload = true;
   });
 
-  $imgurOauth.attr('href', $imgurOauth.attr('href') + '&client_id=' + clientId);
+  $imgurOauth.attr("href", $imgurOauth.attr("href") + "&client_id=" + clientId);
 
-  $imgurAnon.click(function() {
+  $imgurAnon.click(function () {
     imgurUpload();
   });
 
@@ -46,24 +46,24 @@ $(function() {
     $group.hide();
 
     var auth;
-    if (token) auth = 'Bearer ' + token;
-    else auth = 'Client-ID ' + clientId;
+    if (token) auth = "Bearer " + token;
+    else auth = "Client-ID " + clientId;
 
     $.ajax({
-      url: 'https://api.imgur.com/3/image',
-      type: 'POST',
+      url: "https://api.imgur.com/3/image",
+      type: "POST",
       headers: {
         Authorization: auth,
-        Accept: 'application/json'
+        Accept: "application/json",
       },
       data: {
         image: localStorage.dataBase64,
-        type: 'base64'
+        type: "base64",
       },
-      success: function(result) {
+      success: function (result) {
         var id = result.data.id;
-        window.location = 'https://imgur.com/gallery/' + id;
-      }
+        window.location = "https://imgur.com/gallery/" + id;
+      },
     });
   }
 
@@ -75,9 +75,9 @@ $(function() {
     return;
   }
 
-  if (!('sendAsBinary' in XMLHttpRequest.prototype)) {
-    XMLHttpRequest.prototype.sendAsBinary = function(string) {
-      var bytes = Array.prototype.map.call(string, function(c) {
+  if (!("sendAsBinary" in XMLHttpRequest.prototype)) {
+    XMLHttpRequest.prototype.sendAsBinary = function (string) {
+      var bytes = Array.prototype.map.call(string, function (c) {
         return c.charCodeAt(0) & 0xff;
       });
       this.send(new Uint8Array(bytes).buffer);
@@ -86,8 +86,8 @@ $(function() {
 
   function startLoader() {
     var i = 0;
-    loader = setInterval(function() {
-      $loader.val(++i % 100).trigger('change');
+    loader = setInterval(function () {
+      $loader.val(++i % 100).trigger("change");
     }, 10);
     $loader.knob().show();
   }
@@ -97,8 +97,8 @@ $(function() {
     $loader.knob().hide();
   }
 
-  on('prepare', function(err) {
-    if ( !! err) {
+  on("prepare", function (err) {
+    if (!!err) {
       $error.show();
     } else {
       $record.show();
@@ -106,49 +106,49 @@ $(function() {
     }
   });
 
-  on('building', function() {
-    $info.text('Building...');
+  on("building", function () {
+    $info.text("Building...");
     startLoader();
   });
 
-  on('gif', function(dataBase64) {
+  on("gif", function (dataBase64) {
     stopLoader();
-    $record.removeClass('disabled recording');
-    $info.text('Record');
+    $record.removeClass("disabled recording");
+    $info.text("Record");
 
     localStorage.dataBase64 = dataBase64;
-    var dataUrl = 'data:image/gif;base64,' + dataBase64;
-    $gif.attr('src', dataUrl).show();
-    $gifLink.attr('href', dataUrl);
+    var dataUrl = "data:image/gif;base64," + dataBase64;
+    $gif.attr("src", dataUrl).show();
+    $gifLink.attr("href", dataUrl);
     $imgur.show();
   });
 
   function loading() {
     $gif.hide();
     $imgur.hide();
-    $record.addClass('disabled');
-    $info.text('Wait...');
+    $record.addClass("disabled");
+    $info.text("Wait...");
     $countdown.knob().show();
   }
 
   function record() {
-    $record.addClass('recording');
-    $info.text('Recording...');
+    $record.addClass("recording");
+    $info.text("Recording...");
 
-    var qualityBad = $qualityBad.prop('checked');
-    var lengthShort = $lengthShort.prop('checked');
+    var qualityBad = $qualityBad.prop("checked");
+    var lengthShort = $lengthShort.prop("checked");
 
     gifie.init({
       quality: qualityBad ? 10 : 30,
-      length: lengthShort ? 15 : 5
+      length: lengthShort ? 15 : 5,
     });
   }
 
-  $record.click(function() {
+  $record.click(function () {
     loading();
-    $countdown.val($countdown.data('max')).trigger('change');
-    var interval = setInterval(function() {
-      $countdown.val($countdown.val() - 1).trigger('change');
+    $countdown.val($countdown.data("max")).trigger("change");
+    var interval = setInterval(function () {
+      $countdown.val($countdown.val() - 1).trigger("change");
       if ($countdown.val() > 0) return;
 
       clearInterval(interval);
@@ -161,10 +161,10 @@ $(function() {
 });
 
 var listeners = {};
-on = function(name, cb) {
+on = function (name, cb) {
   listeners[name] = cb;
 };
-trigger = function(name) {
+trigger = function (name) {
   var cb = listeners[name];
   if (cb) cb.apply(null, [].slice.call(arguments, 1));
 };

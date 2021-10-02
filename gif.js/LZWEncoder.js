@@ -23,9 +23,10 @@
 var EOF = -1;
 var BITS = 12;
 var HSIZE = 5003; // 80% occupancy
-var masks = [0x0000, 0x0001, 0x0003, 0x0007, 0x000F, 0x001F,
-             0x003F, 0x007F, 0x00FF, 0x01FF, 0x03FF, 0x07FF,
-             0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF];
+var masks = [
+  0x0000, 0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
+  0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff,
+];
 
 function LZWEncoder(width, height, pixels, colorDepth) {
   var initCodeSize = Math.max(2, colorDepth);
@@ -34,7 +35,8 @@ function LZWEncoder(width, height, pixels, colorDepth) {
   var htab = new Int32Array(HSIZE);
   var codetab = new Int32Array(HSIZE);
 
-  var cur_accum, cur_bits = 0;
+  var cur_accum,
+    cur_bits = 0;
   var a_count;
   var free_ent = 0; // first unused entry
   var maxcode;
@@ -110,7 +112,8 @@ function LZWEncoder(width, height, pixels, colorDepth) {
       if (htab[i] === fcode) {
         ent = codetab[i];
         continue;
-      } else if (htab[i] >= 0) { // non-empty slot
+      } else if (htab[i] >= 0) {
+        // non-empty slot
         disp = hsize_reg - i; // secondary hash (after G. Knott)
         if (i === 0) disp = 1;
         do {
@@ -168,13 +171,13 @@ function LZWEncoder(width, height, pixels, colorDepth) {
   function output(code, outs) {
     cur_accum &= masks[cur_bits];
 
-    if (cur_bits > 0) cur_accum |= (code << cur_bits);
+    if (cur_bits > 0) cur_accum |= code << cur_bits;
     else cur_accum = code;
 
     cur_bits += n_bits;
 
     while (cur_bits >= 8) {
-      char_out((cur_accum & 0xff), outs);
+      char_out(cur_accum & 0xff, outs);
       cur_accum >>= 8;
       cur_bits -= 8;
     }
@@ -183,7 +186,7 @@ function LZWEncoder(width, height, pixels, colorDepth) {
     // then increase it, if possible.
     if (free_ent > maxcode || clear_flg) {
       if (clear_flg) {
-        maxcode = MAXCODE(n_bits = g_init_bits);
+        maxcode = MAXCODE((n_bits = g_init_bits));
         clear_flg = false;
       } else {
         ++n_bits;
@@ -195,7 +198,7 @@ function LZWEncoder(width, height, pixels, colorDepth) {
     if (code == EOFCode) {
       // At EOF, write the rest of the buffer.
       while (cur_bits > 0) {
-        char_out((cur_accum & 0xff), outs);
+        char_out(cur_accum & 0xff, outs);
         cur_accum >>= 8;
         cur_bits -= 8;
       }

@@ -1,12 +1,14 @@
-importScripts('trix.js',
-  'gif.js/NeuQuant.js',
-  'gif.js/LZWEncoder.js',
-  'gif.js/GIFEncoder.js');
+importScripts(
+  "trix.js",
+  "gif.js/NeuQuant.js",
+  "gif.js/LZWEncoder.js",
+  "gif.js/GIFEncoder.js"
+);
 
 var encoder;
 
 var cmd = {
-  init: function(data) {
+  init: function (data) {
     encoder = new self.GIFEncoder(data.width, data.height);
     encoder.setQuality(data.quality || 30);
     encoder.setDelay(data.delay || 0);
@@ -15,19 +17,23 @@ var cmd = {
     encoder.firstFrame = true;
   },
 
-  addFrame: function(data) {
+  addFrame: function (data) {
     encoder.addFrame(data);
     encoder.firstFrame = false;
   },
 
-  end: function() {
+  end: function () {
     self.postMessage(encoder.out.getData());
-  }
+  },
 };
 
-self.addEventListener('message', function(event) {
-  var data = event.data;
-  var c = cmd[event.data.cmd];
-  if (!c) c = cmd.addFrame;
-  c(data);
-}, false);
+self.addEventListener(
+  "message",
+  function (event) {
+    var data = event.data;
+    var c = cmd[event.data.cmd];
+    if (!c) c = cmd.addFrame;
+    c(data);
+  },
+  false
+);
