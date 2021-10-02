@@ -4,9 +4,6 @@ JavaScript GIF encoder that runs in your browser.
 
 Uses typed arrays and web workers to render each frame in the background, it's really fast!
 
-**Demo** - http://jnordberg.github.io/gif.js/
-
-Works in browsers supporting: [Web Workers](http://www.w3.org/TR/workers/), [File API](http://www.w3.org/TR/FileAPI/) and [Typed Arrays](https://www.khronos.org/registry/typedarray/specs/latest/)
 
 ## Usage
 
