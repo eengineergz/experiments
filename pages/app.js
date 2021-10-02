@@ -98,7 +98,7 @@ $(function () {
   }
 
   on("prepare", function (err) {
-    if (!!err) {
+    if (err) {
       $error.show();
     } else {
       $record.show();
